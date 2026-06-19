@@ -55,13 +55,13 @@ class ComponentStateMonitor:
         )
         self._subscription = self._node.create_subscription(
             ControllerManagerActivity,
-            f'/{controller_manager_name}/activity',
+            f'{controller_manager_name}/activity',
             self._activity_callback,
             qos_profile,
             callback_group=self._node.callback_group_subscriber
         )
         self._node.get_logger().info(
-            f"{self._logger_prefix} Subscribed to /{controller_manager_name}/activity"
+            f"{self._logger_prefix} Subscribed to {controller_manager_name}/activity"
         )
 
         # --- Lifecycle node monitoring ---
@@ -70,7 +70,7 @@ class ComponentStateMonitor:
         for lc_node_name in lifecycle_nodes:
             self._lc_node_get_state_clients[lc_node_name] = self._node.create_client(
                 GetState,
-                f'/{lc_node_name}/get_state',
+                f'{lc_node_name}/get_state',
                 callback_group=self._node.callback_group_services
             )
 
@@ -83,7 +83,7 @@ class ComponentStateMonitor:
             )
             self._node.create_subscription(
                 TransitionEvent,
-                f'/{lc_node_name}/transition_event',
+                f'{lc_node_name}/transition_event',
                 callback=lambda msg, n=lc_node_name: self._lifecycle_transition_event_callback(
                     n, msg),
                 qos_profile=10,

@@ -1,0 +1,37 @@
+hardware:
+  - RRBot
+
+lifecycle_nodes: [dummy_lifecycle_node]
+
+controllers:
+  joint_state_broadcaster:
+    requires: [RRBot, active]
+
+  forward_position_controller:
+    requires: [RRBot, active]
+
+goal_states:
+
+  idle:
+    controllers:
+      joint_state_broadcaster: inactive
+      forward_position_controller: inactive
+    hardware:
+      RRBot: inactive
+    lifecycle_nodes: { dummy_lifecycle_node: inactive }
+
+  broadcast:
+    controllers:
+      joint_state_broadcaster: active
+      forward_position_controller: inactive
+    hardware:
+      RRBot: active
+    lifecycle_nodes: { dummy_lifecycle_node: unconfigured }
+
+  running:
+    controllers:
+      joint_state_broadcaster: active
+      forward_position_controller: active
+    hardware:
+      RRBot: active
+    lifecycle_nodes: { dummy_lifecycle_node: active }

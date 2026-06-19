@@ -31,7 +31,7 @@ class LifecycleNodeServiceCaller:
         for lc_name in lifecycle_nodes:
             client = self._node.create_client(
                 ChangeState,
-                f'/{lc_name}/change_state',
+                f'{lc_name}/change_state',
                 callback_group=group
             )
             self._clients[lc_name] = client

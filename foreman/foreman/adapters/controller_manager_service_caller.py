@@ -26,13 +26,13 @@ class ControllerManagerServiceCaller:
         group = self._node.callback_group_services
 
         self._client_set_hardware_component_state = self._node.create_client(
-            SetHardwareComponentState, f'/{controller_manager_name}/set_hardware_component_state', callback_group=group)
+            SetHardwareComponentState, f'{controller_manager_name}/set_hardware_component_state', callback_group=group)
         self._client_configure_controller = self._node.create_client(
-            ConfigureController, f'/{controller_manager_name}/configure_controller', callback_group=group)
+            ConfigureController, f'{controller_manager_name}/configure_controller', callback_group=group)
         self._client_cleanup_controller = self._node.create_client(
-            CleanupController, f'/{controller_manager_name}/cleanup_controller', callback_group=group)
+            CleanupController, f'{controller_manager_name}/cleanup_controller', callback_group=group)
         self._client_switch_controller = self._node.create_client(
-            SwitchController, f'/{controller_manager_name}/switch_controller', callback_group=group)
+            SwitchController, f'{controller_manager_name}/switch_controller', callback_group=group)
 
         self._node.get_logger().info(
             f"{self.logger_prefix} {self._controller_manager_name} service clients created.")
