@@ -33,3 +33,10 @@ def test_profile_state_applied_to_every_component():
     assert hw["RRBot"] == LifecycleState.ACTIVE
 
     assert lc["dummy_lifecycle_node"] == LifecycleState.ACTIVE
+
+
+def test_hardware_and_lifecycle_nodes_derived_from_profiles():
+    parsed = parse_yaml_file(CONFIG)
+
+    assert parsed.hardware == ["RRBot"]
+    assert parsed.lifecycle_nodes == ["dummy_lifecycle_node"]

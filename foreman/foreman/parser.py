@@ -60,7 +60,8 @@ def parse_yaml_file(file_path: Path) -> ParsedScenario:
 def parse_meta_profiles_yaml(data) -> ParsedScenario:
     meta_profiles = data["meta_profiles"]
     profiles = data["profiles"]
-
+    hardware_names = []
+    lifecycle_node_names = []
     goals = {}
 
     for meta_profile_name, profile_states in meta_profiles.items():
@@ -91,6 +92,9 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
                     )
                 )
 
+                if hardware not in hardware_names:
+                    hardware_names.append(hardware)
+
             for lifecycle_node in profile.get("lifecycle_nodes", []):
                 lc_goals.append(
                     Component(
@@ -100,6 +104,9 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
                     )
                 )
 
+                if lifecycle_node not in lifecycle_node_names:
+                    lifecycle_node_names.append(lifecycle_node)
+
         goals[meta_profile_name] = SystemGoal(
             name=meta_profile_name,
             hardware_goals=hw_goals,
@@ -108,8 +115,8 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
         )
 
     return ParsedScenario(
-        hardware=[],
-        lifecycle_nodes=[],
+        hardware=hardware_names,
+        lifecycle_nodes=lifecycle_node_names,
         dependency_rules=[],
         goals=goals,
         metadata={},
