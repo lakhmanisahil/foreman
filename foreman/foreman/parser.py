@@ -58,14 +58,53 @@ def parse_yaml_file(file_path: Path) -> ParsedScenario:
 
 
 def parse_meta_profiles_yaml(data) -> ParsedScenario:
+    meta_profiles = data["meta_profiles"]
+    profiles = data["profiles"]
+
     goals = {}
 
-    for meta_name in data["meta_profiles"]:
-        goals[meta_name] = SystemGoal(
-            name=meta_name,
-            hardware_goals=[],
-            controller_goals=[],
-            lifecycle_node_goals=[],
+    for meta_profile_name, profile_states in meta_profiles.items():
+        hw_goals = []
+        ctrl_goals = []
+        lc_goals = []
+
+        for profile_name, profile_config in profile_states.items():
+
+            profile_state = parse_state_string(profile_config["state"])
+            profile = profiles[profile_name]
+
+            for controller in profile.get("controllers", []):
+                ctrl_goals.append(
+                    Component(
+                        controller,
+                        ComponentType.CONTROLLER,
+                        profile_state,
+                    )
+                )
+
+            for hardware in profile.get("hardware", []):
+                hw_goals.append(
+                    Component(
+                        hardware,
+                        ComponentType.HARDWARE,
+                        profile_state,
+                    )
+                )
+
+            for lifecycle_node in profile.get("lifecycle_nodes", []):
+                lc_goals.append(
+                    Component(
+                        lifecycle_node,
+                        ComponentType.LIFECYCLE_NODE,
+                        profile_state,
+                    )
+                )
+
+        goals[meta_profile_name] = SystemGoal(
+            name=meta_profile_name,
+            hardware_goals=hw_goals,
+            controller_goals=ctrl_goals,
+            lifecycle_node_goals=lc_goals,
         )
 
     return ParsedScenario(

@@ -1,8 +1,13 @@
 from pathlib import Path
 
 from foreman.parser import parse_yaml_file
+from foreman.types import LifecycleState
 
 CONFIG = Path(__file__).parent.parent / "config" / "meta_profiles_config.yaml"
+
+
+def _states_by_name(components):
+    return {c.name: c.lifecycle_state for c in components}
 
 
 def test_meta_profiles_become_goals():
@@ -13,3 +18,18 @@ def test_meta_profiles_become_goals():
         "sensing_only",
         "all_down",
     }
+
+
+def test_profile_state_applied_to_every_component():
+    goal = parse_yaml_file(CONFIG).goals["full_active"]
+
+    ctrl = _states_by_name(goal.controller_goals)
+    hw = _states_by_name(goal.hardware_goals)
+    lc = _states_by_name(goal.lifecycle_node_goals)
+
+    assert ctrl["forward_position_controller"] == LifecycleState.ACTIVE
+    assert ctrl["joint_state_broadcaster"] == LifecycleState.ACTIVE
+
+    assert hw["RRBot"] == LifecycleState.ACTIVE
+
+    assert lc["dummy_lifecycle_node"] == LifecycleState.ACTIVE
