@@ -51,6 +51,35 @@ def parse_yaml_file(file_path: Path) -> ParsedScenario:
     if data is None:
         raise ValueError("Empty YAML file")
 
+    if "profiles" in data:
+        return parse_meta_profiles_yaml(data)
+
+    return parse_goal_states_yaml(data)
+
+
+def parse_meta_profiles_yaml(data) -> ParsedScenario:
+    goals = {}
+
+    for meta_name in data["meta_profiles"]:
+        goals[meta_name] = SystemGoal(
+            name=meta_name,
+            hardware_goals=[],
+            controller_goals=[],
+            lifecycle_node_goals=[],
+        )
+
+    return ParsedScenario(
+        hardware=[],
+        lifecycle_nodes=[],
+        dependency_rules=[],
+        goals=goals,
+        metadata={},
+        tracked_components=set(),
+    )
+
+
+def parse_goal_states_yaml(data) -> ParsedScenario:
+
     hardware = data.get('hardware', [])
     lifecycle_nodes = data.get('lifecycle_nodes', [])
 

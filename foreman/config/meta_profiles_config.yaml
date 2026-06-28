@@ -1,0 +1,19 @@
+meta_profiles:
+  full_active:
+    motion: {state: active}
+    sensing: {state: active}
+  sensing_only:
+    motion: {state: inactive}
+    sensing: {state: active}
+  all_down:
+    motion: {state: inactive}
+    sensing: {state: inactive}
+
+profiles:
+  motion:
+    controllers: [forward_position_controller]
+    hardware: []
+  sensing:
+    controllers: [joint_state_broadcaster]
+    hardware: [RRBot]
+    lifecycle_nodes: [dummy_lifecycle_node]
