@@ -40,3 +40,14 @@ def test_hardware_and_lifecycle_nodes_derived_from_profiles():
 
     assert parsed.hardware == ["RRBot"]
     assert parsed.lifecycle_nodes == ["dummy_lifecycle_node"]
+
+
+def test_tracked_components_cover_all_profile_components():
+    parsed = parse_yaml_file(CONFIG)
+
+    assert parsed.tracked_components == {
+        "forward_position_controller",
+        "joint_state_broadcaster",
+        "RRBot",
+        "dummy_lifecycle_node",
+    }

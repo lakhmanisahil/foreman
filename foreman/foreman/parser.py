@@ -114,13 +114,19 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
             lifecycle_node_goals=lc_goals,
         )
 
+    tracked_components = set(hardware_names + lifecycle_node_names)
+    for goal in goals.values():
+        tracked_components.update(c.name for c in goal.hardware_goals)
+        tracked_components.update(c.name for c in goal.controller_goals)
+        tracked_components.update(c.name for c in goal.lifecycle_node_goals)
+
     return ParsedScenario(
         hardware=hardware_names,
         lifecycle_nodes=lifecycle_node_names,
         dependency_rules=[],
         goals=goals,
         metadata={},
-        tracked_components=set(),
+        tracked_components=tracked_components,
     )
 
 
