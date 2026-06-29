@@ -75,6 +75,12 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
                     f"Unknown profile '{profile_name}' referenced by meta-profile '{meta_profile_name}'"
                 )
 
+            if "state" not in profile_config:
+                raise ValueError(
+                    f"Profile '{profile_name}' in meta-profile "
+                    f"'{meta_profile_name}' is missing a 'state' field."
+                )
+
             profile_state = parse_state_string(profile_config["state"])
             profile = profiles[profile_name]
 

@@ -71,3 +71,20 @@ def test_missing_profile_reference_raises(tmp_path):
 
     with pytest.raises(ValueError):
         parse_yaml_file(config)
+
+
+def test_missing_profile_state_raises(tmp_path):
+    config = tmp_path / "missing_state.yaml"
+
+    config.write_text(
+        "profiles:\n"
+        "  motion:\n"
+        "    controllers: [controller]\n"
+        "\n"
+        "meta_profiles:\n"
+        "  running:\n"
+        "    motion: {}\n"
+    )
+
+    with pytest.raises(ValueError):
+        parse_yaml_file(config)
