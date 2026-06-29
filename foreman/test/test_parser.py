@@ -39,13 +39,13 @@ class TestParsedScenario:
         assert parsed_scenario.dependency_rules == []
 
 
-class TestGoalStates:
-    """Tests for all three goal states."""
+class TestMetaProfiles:
+    """Tests for all three meta_profiles."""
 
-    def test_all_goal_states_present(self, parsed_scenario):
+    def test_all_meta_profiles_present(self, parsed_scenario):
         assert set(parsed_scenario.goals.keys()) == {"idle", "broadcast_only", "running"}
 
-    def test_idle_goal(self, parsed_scenario):
+    def test_idle_meta_profile(self, parsed_scenario):
         goal = parsed_scenario.goals["idle"]
         assert goal.name == "idle"
 
@@ -66,7 +66,7 @@ class TestGoalStates:
         assert goal.lifecycle_node_goals[0].name == "dummy_lifecycle_node"
         assert goal.lifecycle_node_goals[0].lifecycle_state == LifecycleState.INACTIVE
 
-    def test_broadcast_only_goal(self, parsed_scenario):
+    def test_broadcast_only_meta_profile(self, parsed_scenario):
         goal = parsed_scenario.goals["broadcast_only"]
         assert goal.name == "broadcast_only"
 
@@ -79,7 +79,7 @@ class TestGoalStates:
         assert ctrl_by_name["kassow_joint_trajectory_controller"].lifecycle_state == LifecycleState.INACTIVE
         assert ctrl_by_name["franka_joint_trajectory_controller"].lifecycle_state == LifecycleState.INACTIVE
 
-    def test_running_goal(self, parsed_scenario):
+    def test_running_meta_profile(self, parsed_scenario):
         goal = parsed_scenario.goals["running"]
         assert goal.name == "running"
 
@@ -91,7 +91,7 @@ class TestGoalStates:
         for ctrl in goal.controller_goals:
             assert ctrl.lifecycle_state == LifecycleState.ACTIVE
 
-    def test_goal_component_types(self, parsed_scenario):
+    def test_profile_component_types(self, parsed_scenario):
         idle = parsed_scenario.goals["idle"]
         for hw in idle.hardware_goals:
             assert hw.component_type == ComponentType.HARDWARE
@@ -99,3 +99,40 @@ class TestGoalStates:
             assert ctrl.component_type == ComponentType.CONTROLLER
         for lc in idle.lifecycle_node_goals:
             assert lc.component_type == ComponentType.LIFECYCLE_NODE
+
+
+class TestValidation:
+    """Test for validation of meta_profiles and profiles."""
+
+    def test_missing_profile_reference_raises(self, tmp_path):
+        config = tmp_path / "missing_profile.yaml"
+
+        config.write_text(
+            "profiles:\n"
+            "  motion:\n"
+            "    controllers: [controller]\n"
+            "\n"
+            "meta_profiles:\n"
+            "  running:\n"
+            "    missing_profile:\n"
+            "      state: active\n"
+        )
+
+        with pytest.raises(ValueError):
+            parse_yaml_file(config)
+
+    def test_missing_profile_state_raises(self, tmp_path):
+        config = tmp_path / "missing_state.yaml"
+
+        config.write_text(
+            "profiles:\n"
+            "  motion:\n"
+            "    controllers: [controller]\n"
+            "\n"
+            "meta_profiles:\n"
+            "  running:\n"
+            "    motion: {}\n"
+        )
+
+        with pytest.raises(ValueError):
+            parse_yaml_file(config)
