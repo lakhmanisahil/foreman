@@ -51,17 +51,15 @@ def parse_yaml_file(file_path: Path) -> ParsedScenario:
     if data is None:
         raise ValueError("Empty YAML file")
 
-    if "profiles" in data:
-        return parse_meta_profiles_yaml(data)
-
-    return parse_goal_states_yaml(data)
-
-
-def parse_meta_profiles_yaml(data) -> ParsedScenario:
     meta_profiles = data["meta_profiles"]
     profiles = data["profiles"]
+
     hardware_names = []
     lifecycle_node_names = []
+
+    # Dependencies are inferred at runtime from the controller_manager
+    dependency_rules: List[ControllerDependencyRule] = []
+
     goals = {}
 
     for meta_profile_name, profile_states in meta_profiles.items():
@@ -124,6 +122,13 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
             lifecycle_node_goals=lc_goals,
         )
 
+    metadata = {}
+    known_keys = {"profiles", "meta_profiles"}
+
+    for key, value in data.items():
+        if key not in known_keys:
+            metadata[key] = value
+
     tracked_components = set(hardware_names + lifecycle_node_names)
     for goal in goals.values():
         tracked_components.update(c.name for c in goal.hardware_goals)
@@ -133,72 +138,6 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
     return ParsedScenario(
         hardware=hardware_names,
         lifecycle_nodes=lifecycle_node_names,
-        dependency_rules=[],
-        goals=goals,
-        metadata={},
-        tracked_components=tracked_components,
-    )
-
-
-def parse_goal_states_yaml(data) -> ParsedScenario:
-
-    hardware = data.get('hardware', [])
-    lifecycle_nodes = data.get('lifecycle_nodes', [])
-
-    # Dependencies are inferred at runtime from the controller_manager
-    dependency_rules: List[ControllerDependencyRule] = []
-
-    goals = {}
-    goal_states = data.get('goal_states', {})
-    for goal_name, goal_config in goal_states.items():
-        hw_goals = []
-        ctrl_goals = []
-        lc_goals = []
-
-        for hw_name, state_str in goal_config.get('hardware', {}).items():
-            hw_goals.append(Component(
-                name=hw_name,
-                component_type=ComponentType.HARDWARE,
-                lifecycle_state=parse_state_string(state_str)
-            ))
-
-        for ctrl_name, state_str in goal_config.get('controllers', {}).items():
-            ctrl_goals.append(Component(
-                name=ctrl_name,
-                component_type=ComponentType.CONTROLLER,
-                lifecycle_state=parse_state_string(state_str)
-            ))
-
-        for lc_name, state_str in goal_config.get('lifecycle_nodes', {}).items():
-            lc_goals.append(Component(
-                name=lc_name,
-                component_type=ComponentType.LIFECYCLE_NODE,
-                lifecycle_state=parse_state_string(state_str)
-            ))
-
-        goals[goal_name] = SystemGoal(
-            name=goal_name,
-            hardware_goals=hw_goals,
-            controller_goals=ctrl_goals,
-            lifecycle_node_goals=lc_goals
-        )
-
-    metadata = {}
-    known_keys = {'hardware',
-                  'lifecycle_nodes', 'controllers', 'goal_states'}
-    for key, value in data.items():
-        if key not in known_keys:
-            metadata[key] = value
-
-    tracked_components = set(hardware + lifecycle_nodes)
-    for goal in goals.values():
-        tracked_components.update(c.name for c in goal.hardware_goals)
-        tracked_components.update(c.name for c in goal.controller_goals)
-        tracked_components.update(c.name for c in goal.lifecycle_node_goals)
-
-    return ParsedScenario(
-        hardware=hardware,
-        lifecycle_nodes=lifecycle_nodes,
         dependency_rules=dependency_rules,
         goals=goals,
         metadata=metadata,
