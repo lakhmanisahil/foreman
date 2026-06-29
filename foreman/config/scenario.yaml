@@ -1,41 +1,32 @@
-hardware:
-  - FrankaHardwareInterface
-  - kassow
-
-lifecycle_nodes:
-  - dummy_lifecycle_node
-
-goal_states:
-
-  idle:
-    controllers:
-      joint_state_broadcaster: inactive
-      kassow_joint_trajectory_controller: inactive
-      franka_joint_trajectory_controller: inactive
+profiles:
+  base:
     hardware:
-      FrankaHardwareInterface: inactive
-      kassow: inactive
+      - FrankaHardwareInterface
+      - kassow
     lifecycle_nodes:
-      dummy_lifecycle_node: inactive
+      - dummy_lifecycle_node
+
+  broadcaster:
+    controllers:
+      - joint_state_broadcaster
+
+  trajectory:
+    controllers:
+      - kassow_joint_trajectory_controller
+      - franka_joint_trajectory_controller
+
+meta_profiles:
+  idle:
+    base: {state: inactive}
+    broadcaster: {state: inactive}
+    trajectory: {state: inactive}
 
   broadcast_only:
-    controllers:
-      joint_state_broadcaster: active
-      kassow_joint_trajectory_controller: inactive
-      franka_joint_trajectory_controller: inactive
-    hardware:
-      FrankaHardwareInterface: active
-      kassow: active
-    lifecycle_nodes:
-      dummy_lifecycle_node: active
+    base: {state: active}
+    broadcaster: {state: active}
+    trajectory: {state: inactive}
 
   running:
-    controllers:
-      joint_state_broadcaster: active
-      kassow_joint_trajectory_controller: active
-      franka_joint_trajectory_controller: active
-    hardware:
-      FrankaHardwareInterface: active
-      kassow: active
-    lifecycle_nodes:
-      dummy_lifecycle_node: active
+    base: {state: active}
+    broadcaster: {state: active}
+    trajectory: {state: active}
