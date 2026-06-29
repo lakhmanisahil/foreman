@@ -70,6 +70,10 @@ def parse_meta_profiles_yaml(data) -> ParsedScenario:
         lc_goals = []
 
         for profile_name, profile_config in profile_states.items():
+            if profile_name not in profiles:
+                raise ValueError(
+                    f"Unknown profile '{profile_name}' referenced by meta-profile '{meta_profile_name}'"
+                )
 
             profile_state = parse_state_string(profile_config["state"])
             profile = profiles[profile_name]

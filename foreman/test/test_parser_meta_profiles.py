@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from foreman.parser import parse_yaml_file
 from foreman.types import LifecycleState
 
@@ -51,3 +53,21 @@ def test_tracked_components_cover_all_profile_components():
         "RRBot",
         "dummy_lifecycle_node",
     }
+
+
+def test_missing_profile_reference_raises(tmp_path):
+    config = tmp_path / "missing_profile.yaml"
+
+    config.write_text(
+        "profiles:\n"
+        "  motion:\n"
+        "    controllers: [controller]\n"
+        "\n"
+        "meta_profiles:\n"
+        "  running:\n"
+        "    missing_profile:\n"
+        "      state: active\n"
+    )
+
+    with pytest.raises(ValueError):
+        parse_yaml_file(config)
