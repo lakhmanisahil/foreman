@@ -140,3 +140,84 @@ def test_idle_meta_profile_is_available():
     )
 
     assert "idle" in available
+
+
+def test_idle_meta_profile_is_unavailable_when_profile_is_missing():
+    scenario = parsed()
+
+    available_profiles = {
+        "base",
+    }
+
+    available = get_available_meta_profiles(
+        scenario.meta_profiles,
+        available_profiles,
+    )
+
+    assert "idle" not in available
+
+
+def test_broadcast_only_meta_profile_is_available():
+    scenario = parsed()
+
+    available_profiles = {
+        "base",
+        "broadcaster",
+        "trajectory",
+    }
+
+    available = get_available_meta_profiles(
+        scenario.meta_profiles,
+        available_profiles,
+    )
+
+    assert "broadcast_only" in available
+
+
+def test_broadcast_only_meta_profile_is_unavailable():
+    scenario = parsed()
+
+    available_profiles = {
+        "base",
+        "trajectory",
+    }
+
+    available = get_available_meta_profiles(
+        scenario.meta_profiles,
+        available_profiles,
+    )
+
+    assert "broadcast_only" not in available
+
+
+def test_running_meta_profile_is_available():
+    scenario = parsed()
+
+    available_profiles = {
+        "base",
+        "broadcaster",
+        "trajectory",
+    }
+
+    available = get_available_meta_profiles(
+        scenario.meta_profiles,
+        available_profiles,
+    )
+
+    assert "running" in available
+
+
+def test_running_meta_profile_is_unavailable_when_profile_is_missing():
+    scenario = parsed()
+
+    available_profiles = {
+        "base",
+        "trajectory",
+    }
+
+    available = get_available_meta_profiles(
+        scenario.meta_profiles,
+        available_profiles,
+    )
+
+    assert "running" not in available
