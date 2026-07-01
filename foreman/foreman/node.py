@@ -63,6 +63,11 @@ class ForemanNode(Node):
             engine=self.foreman_engine
         )
 
+        self.ros_list_profiles_server = adapters.RosListProfilesServer(
+            node=self,
+            engine=self.foreman_engine
+        )
+
         # MAIN LOOP ================================================
 
         # RUN everything at 10HZ
