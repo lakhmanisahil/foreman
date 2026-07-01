@@ -121,3 +121,32 @@ class TestRosListProfilesServer(unittest.TestCase):
             set(response.meta_profiles),
             set(),
         )
+
+    def test_unavailable_filter_returns_unavailable_profiles(self):
+        """Return only profiles whose required components are not observed."""
+
+        request = ListProfiles.Request()
+        request.filter = request.UNAVAILABLE
+        response = ListProfiles.Response()
+
+        response = self.server._handle_list_profiles(
+            request,
+            response,
+        )
+
+        self.assertEqual(
+            set(response.profiles),
+            {
+                "broadcaster",
+                "trajectory",
+            },
+        )
+
+        self.assertEqual(
+            set(response.meta_profiles),
+            {
+                "idle",
+                "broadcast_only",
+                "running",
+            },
+        )

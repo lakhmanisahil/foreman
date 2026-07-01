@@ -38,6 +38,9 @@ class RosListProfilesServer:
         profiles = self._engine.config.profiles
         meta_profiles = self._engine.config.meta_profiles
 
+        all_profiles = set(profiles.keys())
+        all_meta_profiles = set(meta_profiles.keys())
+
         snapshot = self._engine.get_engine_snapshot()
 
         observed_components = {
@@ -62,5 +65,14 @@ class RosListProfilesServer:
         elif request.filter == request.AVAILABLE:
             response.profiles = list(available_profiles)
             response.meta_profiles = list(available_meta_profiles)
+
+        elif request.filter == request.UNAVAILABLE:
+            response.profiles = list(
+                all_profiles - available_profiles
+            )
+
+            response.meta_profiles = list(
+                all_meta_profiles - available_meta_profiles
+            )
 
         return response
