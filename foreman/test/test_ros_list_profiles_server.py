@@ -103,3 +103,63 @@ class TestRosListProfilesServer(unittest.TestCase):
                 "running",
             },
         )
+
+    def test_available_filter_returns_available_profiles(self):
+        """Return only profiles whose required components are observed."""
+
+        self.engine.config.profiles = {
+            "base": {
+                "hardware": [
+                    "FrankaHardwareInterface",
+                    "kassow",
+                ],
+                "lifecycle_nodes": [
+                    "dummy_lifecycle_node",
+                ],
+            },
+            "broadcaster": {
+                "controllers": [
+                    "joint_state_broadcaster",
+                ],
+            },
+            "trajectory": {
+                "controllers": [
+                    "kassow_joint_trajectory_controller",
+                    "franka_joint_trajectory_controller",
+                ],
+            },
+        }
+
+        self.engine.config.meta_profiles = {
+            "idle": {
+                "base": {},
+                "broadcaster": {},
+                "trajectory": {},
+            },
+            "running": {
+                "base": {},
+                "broadcaster": {},
+                "trajectory": {},
+            },
+        }
+
+        request = ListProfiles.Request()
+        request.filter = request.AVAILABLE
+        response = ListProfiles.Response()
+
+        response = self.server._handle_list_profiles(
+            request,
+            response,
+        )
+
+        self.assertEqual(
+            set(response.profiles),
+            {
+                "base",
+            },
+        )
+
+        self.assertEqual(
+            set(response.meta_profiles),
+            set(),
+        )

@@ -1,6 +1,8 @@
 from rclpy.node import Node
 
 from foreman.engine import ForemanEngine
+from foreman.profile_status import get_available_meta_profiles
+from foreman.profile_status import get_available_profiles
 from foreman_msgs.srv import ListProfiles
 
 
@@ -36,8 +38,29 @@ class RosListProfilesServer:
         profiles = self._engine.config.profiles
         meta_profiles = self._engine.config.meta_profiles
 
+        snapshot = self._engine.get_engine_snapshot()
+
+        observed_components = {
+            component.name
+            for component in snapshot.components
+        }
+
+        available_profiles = get_available_profiles(
+            profiles,
+            observed_components,
+        )
+
+        available_meta_profiles = get_available_meta_profiles(
+            meta_profiles,
+            available_profiles,
+        )
+
         if request.filter == request.ALL:
             response.profiles = list(profiles.keys())
             response.meta_profiles = list(meta_profiles.keys())
+
+        elif request.filter == request.AVAILABLE:
+            response.profiles = list(available_profiles)
+            response.meta_profiles = list(available_meta_profiles)
 
         return response
