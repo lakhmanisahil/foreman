@@ -1,3 +1,4 @@
+from pathlib import Path
 import unittest
 from unittest.mock import Mock
 
@@ -5,12 +6,15 @@ import rclpy
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 from foreman.adapters.ros_list_profiles_server import RosListProfilesServer
+from foreman.parser import parse_yaml_file
 from foreman.types import Component
 from foreman.types import ComponentType
 from foreman.types import ErrorSnapshot
 from foreman.types import ForemanSnapshot
 from foreman.types import LifecycleState
 from foreman_msgs.srv import ListProfiles
+
+CONFIG = Path(__file__).parent / "test_meta_profiles_config.yaml"
 
 
 class TestRosListProfilesServer(unittest.TestCase):
@@ -29,18 +33,7 @@ class TestRosListProfilesServer(unittest.TestCase):
         self.node.callback_group_services = MutuallyExclusiveCallbackGroup()
         self.addCleanup(self.node.destroy_node)
         self.engine = Mock()
-        self.engine.config = Mock()
-
-        self.engine.config.profiles = {
-            "base": {},
-            "broadcaster": {},
-            "trajectory": {},
-        }
-
-        self.engine.config.meta_profiles = {
-            "running": {},
-            "idle": {},
-        }
+        self.engine.config = parse_yaml_file(CONFIG)
 
         self.engine.get_engine_snapshot.return_value = ForemanSnapshot(
             goal="None",
@@ -100,48 +93,13 @@ class TestRosListProfilesServer(unittest.TestCase):
             set(response.meta_profiles),
             {
                 "idle",
+                "broadcast_only",
                 "running",
             },
         )
 
     def test_available_filter_returns_available_profiles(self):
         """Return only profiles whose required components are observed."""
-
-        self.engine.config.profiles = {
-            "base": {
-                "hardware": [
-                    "FrankaHardwareInterface",
-                    "kassow",
-                ],
-                "lifecycle_nodes": [
-                    "dummy_lifecycle_node",
-                ],
-            },
-            "broadcaster": {
-                "controllers": [
-                    "joint_state_broadcaster",
-                ],
-            },
-            "trajectory": {
-                "controllers": [
-                    "kassow_joint_trajectory_controller",
-                    "franka_joint_trajectory_controller",
-                ],
-            },
-        }
-
-        self.engine.config.meta_profiles = {
-            "idle": {
-                "base": {},
-                "broadcaster": {},
-                "trajectory": {},
-            },
-            "running": {
-                "base": {},
-                "broadcaster": {},
-                "trajectory": {},
-            },
-        }
 
         request = ListProfiles.Request()
         request.filter = request.AVAILABLE
