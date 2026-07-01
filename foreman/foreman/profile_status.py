@@ -23,3 +23,24 @@ def get_available_profiles(
             available_profiles.add(profile_name)
 
     return available_profiles
+
+
+def get_available_meta_profiles(
+    meta_profiles: Dict[str, Any],
+    available_profiles: Set[str],
+) -> Set[str]:
+    """Return the names of available meta-profiles.
+
+    A meta-profile is available when all of its referenced profiles are
+    available.
+    """
+    available_meta_profiles = set()
+
+    for meta_profile_name, meta_profile_config in meta_profiles.items():
+
+        required_profiles = set(meta_profile_config.keys())
+
+        if required_profiles.issubset(available_profiles):
+            available_meta_profiles.add(meta_profile_name)
+
+    return available_meta_profiles

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from foreman.parser import parse_yaml_file
+from foreman.profile_status import get_available_meta_profiles
 from foreman.profile_status import get_available_profiles
 
 CONFIG = Path(__file__).parent / "test_meta_profiles_config.yaml"
@@ -122,3 +123,20 @@ def test_trajectory_profile_is_unavailable():
     )
 
     assert "trajectory" not in available
+
+
+def test_idle_meta_profile_is_available():
+    scenario = parsed()
+
+    available_profiles = {
+        "base",
+        "broadcaster",
+        "trajectory",
+    }
+
+    available = get_available_meta_profiles(
+        scenario.meta_profiles,
+        available_profiles,
+    )
+
+    assert "idle" in available
