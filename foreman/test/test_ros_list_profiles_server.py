@@ -1,0 +1,152 @@
+from pathlib import Path
+import unittest
+from unittest.mock import Mock
+
+import rclpy
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+
+from foreman.adapters.ros_list_profiles_server import RosListProfilesServer
+from foreman.parser import parse_yaml_file
+from foreman.types import Component
+from foreman.types import ComponentType
+from foreman.types import ErrorSnapshot
+from foreman.types import ForemanSnapshot
+from foreman.types import LifecycleState
+from foreman_msgs.srv import ListProfiles
+
+CONFIG = Path(__file__).parent / "test_meta_profiles_config.yaml"
+
+
+class TestRosListProfilesServer(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        rclpy.init()
+
+    @classmethod
+    def tearDownClass(cls):
+        rclpy.shutdown()
+
+    def setUp(self):
+
+        self.node = rclpy.create_node("test_list_profiles")
+        self.node.callback_group_services = MutuallyExclusiveCallbackGroup()
+        self.addCleanup(self.node.destroy_node)
+        self.engine = Mock()
+        self.engine.config = parse_yaml_file(CONFIG)
+
+        self.engine.get_engine_snapshot.return_value = ForemanSnapshot(
+            goal="None",
+            ready=True,
+            at_goal=True,
+            error=ErrorSnapshot(
+                is_error=False,
+                category="None",
+                message="",
+                components=[],
+            ),
+            components=[
+                Component(
+                    "FrankaHardwareInterface",
+                    ComponentType.HARDWARE,
+                    LifecycleState.ACTIVE,
+                ),
+                Component(
+                    "kassow",
+                    ComponentType.HARDWARE,
+                    LifecycleState.ACTIVE,
+                ),
+                Component(
+                    "dummy_lifecycle_node",
+                    ComponentType.LIFECYCLE_NODE,
+                    LifecycleState.ACTIVE,
+                ),
+            ],
+        )
+
+        self.server = RosListProfilesServer(
+            self.node,
+            self.engine,
+        )
+
+    def test_all_filter_returns_all_profiles_and_meta_profiles(self):
+
+        request = ListProfiles.Request()
+        request.filter = request.ALL
+        response = ListProfiles.Response()
+
+        response = self.server._handle_list_profiles(
+            request,
+            response,
+        )
+
+        self.assertEqual(
+            set(response.profiles),
+            {
+                "base",
+                "broadcaster",
+                "trajectory",
+            },
+        )
+
+        self.assertEqual(
+            set(response.meta_profiles),
+            {
+                "idle",
+                "broadcast_only",
+                "running",
+            },
+        )
+
+    def test_available_filter_returns_available_profiles(self):
+        """Return only profiles whose required components are observed."""
+
+        request = ListProfiles.Request()
+        request.filter = request.AVAILABLE
+        response = ListProfiles.Response()
+
+        response = self.server._handle_list_profiles(
+            request,
+            response,
+        )
+
+        self.assertEqual(
+            set(response.profiles),
+            {
+                "base",
+            },
+        )
+
+        self.assertEqual(
+            set(response.meta_profiles),
+            set(),
+        )
+
+    def test_unavailable_filter_returns_unavailable_profiles(self):
+        """Return only profiles whose required components are not observed."""
+
+        request = ListProfiles.Request()
+        request.filter = request.UNAVAILABLE
+        response = ListProfiles.Response()
+
+        response = self.server._handle_list_profiles(
+            request,
+            response,
+        )
+
+        self.assertEqual(
+            set(response.profiles),
+            {
+                "broadcaster",
+                "trajectory",
+            },
+        )
+
+        self.assertEqual(
+            set(response.meta_profiles),
+            {
+                "idle",
+                "broadcast_only",
+                "running",
+            },
+        )

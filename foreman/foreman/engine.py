@@ -193,6 +193,11 @@ class ForemanEngine:
         """Return True if the system is observed and ready to plan."""
         return self._is_ready
 
+    @property
+    def config(self) -> ParsedScenario:
+        """Return the parsed Foreman configuration."""
+        return self._config
+
     def get_engine_snapshot(self) -> ForemanSnapshot:
         """Return a simplified snapshot of the system state."""
         with self._state_lock:

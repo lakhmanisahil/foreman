@@ -1,0 +1,8 @@
+uint8 ALL=0
+uint8 AVAILABLE=1
+uint8 UNAVAILABLE=2
+
+uint8 filter
+---
+string[] profiles
+string[] meta_profiles

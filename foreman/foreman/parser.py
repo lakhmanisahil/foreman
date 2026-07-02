@@ -27,6 +27,8 @@ class ParsedScenario:
     lifecycle_nodes: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
     tracked_components: Set[str] = field(default_factory=set)
+    profiles: Dict[str, Any] = field(default_factory=dict)
+    meta_profiles: Dict[str, Any] = field(default_factory=dict)
 
 
 def parse_state_string(state_str: str) -> LifecycleState:
@@ -141,5 +143,7 @@ def parse_yaml_file(file_path: Path) -> ParsedScenario:
         dependency_rules=dependency_rules,
         goals=goals,
         metadata=metadata,
-        tracked_components=tracked_components
+        tracked_components=tracked_components,
+        profiles=profiles,
+        meta_profiles=meta_profiles
     )

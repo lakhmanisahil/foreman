@@ -1,0 +1,32 @@
+profiles:
+  base:
+    hardware:
+      - FrankaHardwareInterface
+      - kassow
+    lifecycle_nodes:
+      - dummy_lifecycle_node
+
+  broadcaster:
+    controllers:
+      - joint_state_broadcaster
+
+  trajectory:
+    controllers:
+      - kassow_joint_trajectory_controller
+      - franka_joint_trajectory_controller
+
+meta_profiles:
+  idle:
+    base: {state: inactive}
+    broadcaster: {state: inactive}
+    trajectory: {state: inactive}
+
+  broadcast_only:
+    base: {state: active}
+    broadcaster: {state: active}
+    trajectory: {state: inactive}
+
+  running:
+    base: {state: active}
+    broadcaster: {state: active}
+    trajectory: {state: active}

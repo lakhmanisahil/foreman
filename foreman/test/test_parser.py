@@ -38,6 +38,24 @@ class TestParsedScenario:
         """Dependencies are inferred at runtime, never parsed from YAML."""
         assert parsed_scenario.dependency_rules == []
 
+    def test_profiles_are_preserved(self, parsed_scenario):
+        """Profiles defined in the YAML are preserved."""
+
+        assert set(parsed_scenario.profiles.keys()) == {
+            "base",
+            "broadcaster",
+            "trajectory",
+        }
+
+    def test_meta_profiles_are_preserved(self, parsed_scenario):
+        """Meta-profiles defined in the YAML are preserved."""
+
+        assert set(parsed_scenario.meta_profiles.keys()) == {
+            "idle",
+            "broadcast_only",
+            "running",
+        }
+
 
 class TestMetaProfiles:
     """Tests for all three meta_profiles."""
