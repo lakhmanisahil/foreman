@@ -100,7 +100,8 @@ class ForemanNode(Node):
 
     def callback_main_loop(self):
         """Execute the main control loop."""
-        self.ros_activity_publisher.publish()
+        if self.foreman_engine.consume_activity_change():
+            self.ros_activity_publisher.publish()
 
         # do we have an active transition running?
         if self._service_call_active_future and self._service_call_active_future.done():
