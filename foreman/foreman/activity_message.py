@@ -15,6 +15,19 @@ _STATE_TO_MSG = {
     LifecycleState.UNCONFIGURED: ProfileState.UNCONFIGURED,
     LifecycleState.INACTIVE: ProfileState.INACTIVE,
     LifecycleState.ACTIVE: ProfileState.ACTIVE,
+    LifecycleState.FINALIZED: ProfileState.UNDEFINED,  # no usable state
+}
+
+_STATE_LABEL = {
+    ProfileState.UNDEFINED: "undefined",
+    ProfileState.UNCONFIGURED: "unconfigured",
+    ProfileState.INACTIVE: "inactive",
+    ProfileState.ACTIVE: "active",
+}
+
+_STATUS_LABEL = {
+    ProfileState.UNAVAILABLE: "unavailable",
+    ProfileState.AVAILABLE: "available",
 }
 
 
@@ -37,7 +50,6 @@ def _build_profile_messages(
 
     for name, profile in config.profiles.items():
         msg = ProfileState()
-
         msg.name = name
 
         if name in available_profiles:
@@ -45,12 +57,15 @@ def _build_profile_messages(
         else:
             msg.status = ProfileState.UNAVAILABLE
 
+        msg.status_label = _STATUS_LABEL[msg.status]
+
         state = get_profile_state(
             profile,
             observed_states,
         )
 
-        msg.state = _STATE_TO_MSG[state]
+        msg.state = _STATE_TO_MSG.get(state, ProfileState.UNDEFINED)
+        msg.state_label = _STATE_LABEL[msg.state]
 
         messages.append(msg)
 
@@ -87,6 +102,7 @@ def _build_meta_profile_messages(
             msg.status = ProfileState.AVAILABLE
         else:
             msg.status = ProfileState.UNAVAILABLE
+        msg.status_label = _STATUS_LABEL[msg.status]
 
         state = get_meta_profile_state(
             meta_profile,
@@ -94,7 +110,8 @@ def _build_meta_profile_messages(
             observed_states,
         )
 
-        msg.state = _STATE_TO_MSG[state]
+        msg.state = _STATE_TO_MSG.get(state, ProfileState.UNDEFINED)
+        msg.state_label = _STATE_LABEL[msg.state]
 
         messages.append(msg)
 
@@ -115,7 +132,7 @@ def build_foreman_activity(
     msg.is_error = snapshot.error.is_error
     msg.error_category = snapshot.error.category
     msg.error_message = snapshot.error.message
-    msg.error_components = snapshot.error.components
+    msg.error_components = list(snapshot.error.components)
 
     msg.profiles = _build_profile_messages(
         snapshot,

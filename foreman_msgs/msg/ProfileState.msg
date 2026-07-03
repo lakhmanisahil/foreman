@@ -9,4 +9,7 @@ uint8 ACTIVE=3
 string name
 
 uint8 status
+string status_label
+
 uint8 state
+string state_label

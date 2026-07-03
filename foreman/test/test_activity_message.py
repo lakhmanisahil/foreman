@@ -78,6 +78,8 @@ def test_build_message_reports_active_available_profile():
 
     assert base.status == ProfileState.AVAILABLE
     assert base.state == ProfileState.ACTIVE
+    assert base.status_label == "available"
+    assert base.state_label == "active"
 
 
 def test_build_message_copies_engine_snapshot_fields():
@@ -114,3 +116,19 @@ def test_build_message_reports_active_available_meta_profile():
 
     assert running.status == ProfileState.AVAILABLE
     assert running.state == ProfileState.ACTIVE
+    assert running.status_label == "available"
+    assert running.state_label == "active"
+
+
+def test_build_message_reports_unavailable_profile_label():
+    """An unavailable profile reports undefined state with matching labels."""
+    empty = ForemanSnapshot(
+        goal="None", ready=False, at_goal=False,
+        error=ErrorSnapshot(is_error=False, category="", message="", components=[]),
+        components=[],
+    )
+    msg = build_foreman_activity(empty, parsed())
+    base = next(p for p in msg.profiles if p.name == "base")
+    assert base.status == ProfileState.UNAVAILABLE
+    assert base.status_label == "unavailable"
+    assert base.state_label == "undefined"
