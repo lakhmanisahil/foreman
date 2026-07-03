@@ -63,3 +63,21 @@ def test_build_message_reports_active_available_profile():
 
     assert base.status == ProfileState.AVAILABLE
     assert base.state == ProfileState.ACTIVE
+
+
+def test_build_message_copies_engine_snapshot_fields():
+    """The activity message copies the engine snapshot."""
+
+    msg = build_foreman_activity(
+        snapshot(),
+        parsed(),
+    )
+
+    assert msg.current_goal == "running"
+    assert msg.ready is True
+    assert msg.at_goal is True
+
+    assert msg.is_error is False
+    assert msg.error_category == ""
+    assert msg.error_message == ""
+    assert msg.error_components == []
