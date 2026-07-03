@@ -1,7 +1,9 @@
 from typing import Dict
 
 from foreman.parser import ParsedScenario
+from foreman.profile_status import get_available_meta_profiles
 from foreman.profile_status import get_available_profiles
+from foreman.profile_status import get_meta_profile_state
 from foreman.profile_status import get_profile_state
 from foreman.types import ForemanSnapshot
 from foreman.types import LifecycleState
@@ -55,6 +57,50 @@ def _build_profile_messages(
     return messages
 
 
+def _build_meta_profile_messages(
+    snapshot: ForemanSnapshot,
+    config: ParsedScenario,
+):
+    """Build ProfileState messages for every configured meta-profile."""
+    observed_states: Dict[str, LifecycleState] = {
+        component.name: component.lifecycle_state
+        for component in snapshot.components
+    }
+
+    available_profiles = get_available_profiles(
+        config.profiles,
+        set(observed_states.keys()),
+    )
+
+    available_meta_profiles = get_available_meta_profiles(
+        config.meta_profiles,
+        available_profiles,
+    )
+
+    messages = []
+
+    for name, meta_profile in config.meta_profiles.items():
+        msg = ProfileState()
+        msg.name = name
+
+        if name in available_meta_profiles:
+            msg.status = ProfileState.AVAILABLE
+        else:
+            msg.status = ProfileState.UNAVAILABLE
+
+        state = get_meta_profile_state(
+            meta_profile,
+            config.profiles,
+            observed_states,
+        )
+
+        msg.state = _STATE_TO_MSG[state]
+
+        messages.append(msg)
+
+    return messages
+
+
 def build_foreman_activity(
     snapshot: ForemanSnapshot,
     config: ParsedScenario,
@@ -72,6 +118,11 @@ def build_foreman_activity(
     msg.error_components = snapshot.error.components
 
     msg.profiles = _build_profile_messages(
+        snapshot,
+        config,
+    )
+
+    msg.meta_profiles = _build_meta_profile_messages(
         snapshot,
         config,
     )

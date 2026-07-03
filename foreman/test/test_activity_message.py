@@ -43,6 +43,21 @@ def snapshot():
                 ComponentType.LIFECYCLE_NODE,
                 LifecycleState.ACTIVE,
             ),
+            Component(
+                "joint_state_broadcaster",
+                ComponentType.CONTROLLER,
+                LifecycleState.ACTIVE,
+            ),
+            Component(
+                "kassow_joint_trajectory_controller",
+                ComponentType.CONTROLLER,
+                LifecycleState.ACTIVE,
+            ),
+            Component(
+                "franka_joint_trajectory_controller",
+                ComponentType.CONTROLLER,
+                LifecycleState.ACTIVE,
+            ),
         ],
     )
 
