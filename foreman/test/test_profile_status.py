@@ -262,3 +262,41 @@ def test_profile_state_is_active_when_all_required_components_are_active():
     )
 
     assert state == LifecycleState.ACTIVE
+
+
+def test_profile_state_is_inactive_when_all_required_components_are_inactive():
+    """A profile is inactive when all required components are inactive."""
+
+    scenario = parsed()
+
+    observed_states = {
+        "FrankaHardwareInterface": LifecycleState.INACTIVE,
+        "kassow": LifecycleState.INACTIVE,
+        "dummy_lifecycle_node": LifecycleState.INACTIVE,
+    }
+
+    state = get_profile_state(
+        scenario.profiles["base"],
+        observed_states,
+    )
+
+    assert state == LifecycleState.INACTIVE
+
+
+def test_profile_state_is_unconfigured_when_all_required_components_are_unconfigured():
+    """A profile is unconfigured when all required components are unconfigured."""
+
+    scenario = parsed()
+
+    observed_states = {
+        "FrankaHardwareInterface": LifecycleState.UNCONFIGURED,
+        "kassow": LifecycleState.UNCONFIGURED,
+        "dummy_lifecycle_node": LifecycleState.UNCONFIGURED,
+    }
+
+    state = get_profile_state(
+        scenario.profiles["base"],
+        observed_states,
+    )
+
+    assert state == LifecycleState.UNCONFIGURED
