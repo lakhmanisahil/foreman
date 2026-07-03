@@ -12,14 +12,22 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(std_msgs REQUIRED)
 
 set(srv_files
   "srv/SetGoal.srv"
   "srv/ListProfiles.srv"
 )
 
+set(msg_files
+  "msg/ProfileState.msg"
+  "msg/ForemanActivity.msg"
+)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${srv_files}
+  ${msg_files}
+  DEPENDENCIES std_msgs
 )
 
 ament_export_dependencies(rosidl_default_runtime)

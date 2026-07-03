@@ -1,4 +1,7 @@
-from typing import Any, Dict, Set
+from typing import Any, Dict, Optional, Set
+
+from foreman.parser import parse_state_string
+from foreman.types import LifecycleState
 
 
 def get_available_profiles(
@@ -44,3 +47,52 @@ def get_available_meta_profiles(
             available_meta_profiles.add(meta_profile_name)
 
     return available_meta_profiles
+
+
+def get_profile_state(
+    profile: Dict[str, Any],
+    observed_states: Dict[str, LifecycleState],
+) -> Optional[LifecycleState]:
+    """Return the lifecycle state shared by a profile.
+
+    Returns None when any required component is not observed.
+    """
+    required_components = set()
+
+    required_components.update(profile.get("controllers", []))
+    required_components.update(profile.get("hardware", []))
+    required_components.update(profile.get("lifecycle_nodes", []))
+
+    states = set()
+
+    for component_name in required_components:
+        if component_name not in observed_states:
+            return None
+
+        states.add(observed_states[component_name])
+
+    if len(states) == 1:
+        return next(iter(states))
+
+    return None
+
+
+def get_meta_profile_state(
+    meta_profile: Dict[str, Any],
+    profiles: Dict[str, Any],
+    observed_states: Dict[str, LifecycleState],
+) -> LifecycleState:
+    """Return the state of a meta-profile."""
+    for profile_name, target in meta_profile.items():
+
+        target_state = parse_state_string(target["state"])
+
+        actual_state = get_profile_state(
+            profiles[profile_name],
+            observed_states,
+        )
+
+        if actual_state != target_state:
+            return LifecycleState.INACTIVE
+
+    return LifecycleState.ACTIVE

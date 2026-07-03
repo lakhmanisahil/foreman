@@ -34,6 +34,7 @@ class ForemanEngine:
         self._is_ready = False  # when we get first /activity reading
         self._error_state: Optional[ForemanError] = None
         self._last_issued_command: Optional[SystemTransitionCommand] = None
+        self._activity_changed = True  # publish once as soon as state is ready
 
     @property
     def is_at_goal(self) -> bool:
@@ -82,6 +83,7 @@ class ForemanEngine:
                 return ForemanResponse(True, f"Already transitioning to '{goal_name}'.")
 
             self._current_goal = goal
+            self._activity_changed = True
 
         return ForemanResponse(True, f"{error_cleared_msg}Goal '{goal_name}' accepted.")
 
@@ -89,6 +91,7 @@ class ForemanEngine:
         """Aborts the current goal by stopping transitions."""
         with self._state_lock:
             self._error_state = error
+            self._activity_changed = True
             self._last_issued_command = None
             self._locked_abort_transition()
 
@@ -122,6 +125,7 @@ class ForemanEngine:
             previous_state = self._state.components
 
             self._state.components = {comp.name: comp for comp in tracked_components}
+            self._activity_changed = True
 
             was_ready = self._is_ready
             self._is_ready = True
@@ -213,6 +217,16 @@ class ForemanEngine:
                 ),
                 components=list(self._state.components.values())
             )
+
+    def consume_activity_change(self) -> bool:
+        """Return whether observable state changed since the last call, then reset.
+
+        Lets the node publish activity only when something actually changed.
+        """
+        with self._state_lock:
+            changed = self._activity_changed
+            self._activity_changed = False
+            return changed
 
     def _locked_is_at_goal(self) -> bool:
         """
