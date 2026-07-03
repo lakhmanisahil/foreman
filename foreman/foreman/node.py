@@ -68,6 +68,11 @@ class ForemanNode(Node):
             engine=self.foreman_engine
         )
 
+        self.ros_activity_publisher = adapters.RosActivityPublisher(
+            node=self,
+            engine=self.foreman_engine,
+        )
+
         # MAIN LOOP ================================================
 
         # RUN everything at 10HZ
@@ -95,6 +100,8 @@ class ForemanNode(Node):
 
     def callback_main_loop(self):
         """Execute the main control loop."""
+        self.ros_activity_publisher.publish()
+
         # do we have an active transition running?
         if self._service_call_active_future and self._service_call_active_future.done():
             try:
