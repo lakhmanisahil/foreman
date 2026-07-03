@@ -81,3 +81,21 @@ def test_build_message_copies_engine_snapshot_fields():
     assert msg.error_category == ""
     assert msg.error_message == ""
     assert msg.error_components == []
+
+
+def test_build_message_reports_active_available_meta_profile():
+    """An active and available meta-profile is reported correctly."""
+
+    msg = build_foreman_activity(
+        snapshot(),
+        parsed(),
+    )
+
+    running = next(
+        meta_profile
+        for meta_profile in msg.meta_profiles
+        if meta_profile.name == "running"
+    )
+
+    assert running.status == ProfileState.AVAILABLE
+    assert running.state == ProfileState.ACTIVE
