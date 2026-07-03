@@ -1,5 +1,6 @@
 from typing import Any, Dict, Optional, Set
 
+from foreman.parser import parse_state_string
 from foreman.types import LifecycleState
 
 
@@ -74,3 +75,24 @@ def get_profile_state(
         return next(iter(states))
 
     return None
+
+
+def get_meta_profile_state(
+    meta_profile: Dict[str, Any],
+    profiles: Dict[str, Any],
+    observed_states: Dict[str, LifecycleState],
+) -> LifecycleState:
+    """Return the state of a meta-profile."""
+    for profile_name, target in meta_profile.items():
+
+        target_state = parse_state_string(target["state"])
+
+        actual_state = get_profile_state(
+            profiles[profile_name],
+            observed_states,
+        )
+
+        if actual_state != target_state:
+            return LifecycleState.INACTIVE
+
+    return LifecycleState.ACTIVE
