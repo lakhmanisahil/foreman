@@ -62,6 +62,15 @@ def build_foreman_activity(
     """Build a ForemanActivity message."""
     msg = ForemanActivity()
 
+    msg.current_goal = snapshot.goal
+    msg.ready = snapshot.ready
+    msg.at_goal = snapshot.at_goal
+
+    msg.is_error = snapshot.error.is_error
+    msg.error_category = snapshot.error.category
+    msg.error_message = snapshot.error.message
+    msg.error_components = snapshot.error.components
+
     msg.profiles = _build_profile_messages(
         snapshot,
         config,
