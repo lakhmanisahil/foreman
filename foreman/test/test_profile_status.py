@@ -3,6 +3,8 @@ from pathlib import Path
 from foreman.parser import parse_yaml_file
 from foreman.profile_status import get_available_meta_profiles
 from foreman.profile_status import get_available_profiles
+from foreman.profile_status import get_profile_state
+from foreman.types import LifecycleState
 
 CONFIG = Path(__file__).parent / "test_meta_profiles_config.yaml"
 
@@ -221,3 +223,23 @@ def test_running_meta_profile_is_unavailable_when_profile_is_missing():
     )
 
     assert "running" not in available
+
+# New tests added to check profiles and meta-profiles state
+
+
+def test_profile_state_is_none_when_a_required_component_is_missing():
+    """A profile has no state if one of its required components is missing."""
+
+    scenario = parsed()
+
+    observed_states = {
+        "FrankaHardwareInterface": LifecycleState.ACTIVE,
+        "dummy_lifecycle_node": LifecycleState.ACTIVE,
+    }
+
+    state = get_profile_state(
+        scenario.profiles["base"],
+        observed_states,
+    )
+
+    assert state is None
