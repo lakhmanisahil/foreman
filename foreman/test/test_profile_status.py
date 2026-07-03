@@ -300,3 +300,22 @@ def test_profile_state_is_unconfigured_when_all_required_components_are_unconfig
     )
 
     assert state == LifecycleState.UNCONFIGURED
+
+
+def test_profile_state_is_none_when_required_components_have_mixed_states():
+    """A profile has no shared state when required components disagree."""
+
+    scenario = parsed()
+
+    observed_states = {
+        "FrankaHardwareInterface": LifecycleState.ACTIVE,
+        "kassow": LifecycleState.INACTIVE,
+        "dummy_lifecycle_node": LifecycleState.ACTIVE,
+    }
+
+    state = get_profile_state(
+        scenario.profiles["base"],
+        observed_states,
+    )
+
+    assert state is None
