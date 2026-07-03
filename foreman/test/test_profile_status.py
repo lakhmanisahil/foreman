@@ -243,3 +243,22 @@ def test_profile_state_is_none_when_a_required_component_is_missing():
     )
 
     assert state is None
+
+
+def test_profile_state_is_active_when_all_required_components_are_active():
+    """A profile is active when all required components are active."""
+
+    scenario = parsed()
+
+    observed_states = {
+        "FrankaHardwareInterface": LifecycleState.ACTIVE,
+        "kassow": LifecycleState.ACTIVE,
+        "dummy_lifecycle_node": LifecycleState.ACTIVE,
+    }
+
+    state = get_profile_state(
+        scenario.profiles["base"],
+        observed_states,
+    )
+
+    assert state == LifecycleState.ACTIVE

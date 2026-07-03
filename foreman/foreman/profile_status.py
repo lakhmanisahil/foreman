@@ -62,8 +62,15 @@ def get_profile_state(
     required_components.update(profile.get("hardware", []))
     required_components.update(profile.get("lifecycle_nodes", []))
 
+    states = set()
+
     for component_name in required_components:
         if component_name not in observed_states:
             return None
+
+        states.add(observed_states[component_name])
+
+    if len(states) == 1:
+        return next(iter(states))
 
     return None
